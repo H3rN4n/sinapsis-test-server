@@ -1,0 +1,19 @@
+{
+  "name": "sinapsis-test-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "serverless-offline": "^4.9.4"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.437.0",
+    "btoa": "^1.2.1",
+    "sharp": "^0.22.0"
+  }
+}
