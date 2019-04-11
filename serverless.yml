@@ -13,8 +13,14 @@
 
 service: s3-file-upload # NOTE: update this with your service name
 
+stage: ${opt:stage, 'dev'}
+environment:
+  MY_SECRET: ${file(../config.${self:provider.stage}.json):CREDS},
+  BUCKET: ${file(../config.${self:provider.stage}.json):BUCKET}
+
 plugins:
   - serverless-offline
+  - raml-serverless
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -23,6 +29,12 @@ plugins:
 provider:
   name: aws
   runtime: nodejs8.10
+
+custom:
+  documentation:
+    raml:
+      title: Sinapsis Test Api
+      version: v1.0
 
 # you can overwrite defaults here
 #  stage: dev
@@ -58,26 +70,12 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
-  hello:
-    handler: handler.hello
-    events:
-      - http:
-          path: hello
-          method: get
-          cors: true
   uploader:
     handler: uploader.uploader
     events:
       - http:
           path: upload
           method: post
-          cors: true
-  getFileFromS3:
-    handler: uploader.getFile
-    events:
-      - http:
-          path: file
-          method: get
           cors: true
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
@@ -116,10 +114,37 @@ functions:
 # you can add CloudFormation resource templates here
 #resources:
 Resources:
+  S3BucketPermissions:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: ${BUCKET}
+      PolicyDocument:
+        Statement:
+          - Principal: "*"
+            Action:
+              - s3:GetObject
+            Effect: Allow
+            Sid: "AddPerm"
+            Resource: arn:aws:s3:::${BUCKET}/*
   NewResource:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: sls-test
+      BucketName: ${BUCKET}
+  thumbsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: thumbsTable
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+        - AttributeName: thumbs
+          KeyType: "HASH"
+      KeySchema:
+        - AttributeName: email
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
 #  Outputs:
 #     NewOutput:
 #       Description: "Description for the output"
