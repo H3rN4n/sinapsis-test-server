@@ -15,7 +15,6 @@ service: s3-file-upload # NOTE: update this with your service name
 
 stage: ${opt:stage, 'dev'}
 environment:
-  MY_SECRET: ${file(../config.${self:provider.stage}.json):CREDS},
   BUCKET: ${file(../config.${self:provider.stage}.json):BUCKET}
 
 plugins:
@@ -29,6 +28,7 @@ plugins:
 provider:
   name: aws
   runtime: nodejs8.10
+  profile: devSinapsisProfile
 
 custom:
   documentation:

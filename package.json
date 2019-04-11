@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "raml-serverless": "^0.2.0",
     "serverless-offline": "^4.9.4"
   },
   "dependencies": {
