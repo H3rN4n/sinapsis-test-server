@@ -6,11 +6,6 @@ const s3BucketName =
   "s3-file-upload-dev-serverlessdeploymentbucket-btt7iylqaxbg"; //s3-file-upload-dev-serverlessdeploymentbucket-btt7iylqaxbg
 let bucketParams = { Bucket: s3BucketName, ACL: "public-read" };
 
-s3.createBucket(bucketParams)
-  .promise()
-  .then(console.log)
-  .catch(console.error);
-
 const thumbsSizes = [
   { w: 400, h: 300 },
   { w: 160, h: 120 },

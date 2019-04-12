@@ -14,12 +14,25 @@
 service: s3-file-upload # NOTE: update this with your service name
 
 stage: ${opt:stage, 'dev'}
-environment:
-  BUCKET: ${file(../config.${self:provider.stage}.json):BUCKET}
+
+custom:
+  documentation:
+    raml:
+      title: Sinapsis Test Api
+      version: v1.0
+  myStage: ${opt:stage, self:provider.stage}
+  settings:
+    dev:
+      ITEMS_DYNAMODB_TABLE: sls-sinapsis-thumbs-dev
+      BUCKET: s3-fileupload-sinapsis
+    prod:
+      ITEMS_DYNAMODB_TABLE: sls-sinapsis-thumbs-prod
+      BUCKET: s3-fileupload-sinapsis-prod
 
 plugins:
   - serverless-offline
   - raml-serverless
+  - serverless-dynamodb-local
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -30,11 +43,16 @@ provider:
   runtime: nodejs8.10
   profile: devSinapsisProfile
 
-custom:
-  documentation:
-    raml:
-      title: Sinapsis Test Api
-      version: v1.0
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:GetItem"
+        - "dynamodb:PutItem"
+        - "dynamodb:UpdateItem"
+        - "dynamodb:DeleteItem"
+        - "dynamodb:ListStreams"
+      Resource:
+        - "arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.settings.${self:provider.stage}.ITEMS_DYNAMODB_TABLE}"
 
 # you can overwrite defaults here
 #  stage: dev
@@ -77,6 +95,18 @@ functions:
           path: upload
           method: post
           cors: true
+  saveItem:
+    handler: handler.saveItem
+    events:
+      - http:
+          path: item
+          method: post
+  getItem:
+    handler: handler.getItem
+    events:
+      - http:
+          path: item/{itemId}
+          method: get
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
@@ -112,39 +142,39 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-#resources:
-Resources:
-  S3BucketPermissions:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: ${BUCKET}
-      PolicyDocument:
-        Statement:
-          - Principal: "*"
-            Action:
-              - s3:GetObject
-            Effect: Allow
-            Sid: "AddPerm"
-            Resource: arn:aws:s3:::${BUCKET}/*
-  NewResource:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: ${BUCKET}
-  thumbsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: thumbsTable
-      AttributeDefinitions:
-        - AttributeName: email
-          AttributeType: S
-        - AttributeName: thumbs
-          KeyType: "HASH"
-      KeySchema:
-        - AttributeName: email
-          KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
+resources:
+  Resources:
+    # S3BucketPermissions:
+    #   Type: AWS::S3::BucketPolicy
+    #   Properties:
+    #     Bucket: ${self:custom.settings.${self:provider.stage}.BUCKET}
+    #     PolicyDocument:
+    #       Statement:
+    #         - Principal: "*"
+    #           Action:
+    #             - s3:GetObject
+    #           Effect: Allow
+    #           Sid: "AddPerm"
+    #           Resource: arn:aws:s3:::${self:custom.settings.${self:provider.stage}.BUCKET}/*
+    # NewResource:
+    #   Type: AWS::S3::Bucket
+    #   Properties:
+    #     BucketName: ${self:custom.settings.${self:provider.stage}.BUCKET}
+    # thumbsTable:
+    #   Type: AWS::DynamoDB::Table
+    #   Properties:
+    #     TableName: ${self:custom.settings.${self:custom.myStage}.ITEMS_DYNAMODB_TABLE}
+    #     AttributeDefinitions:
+    #       - AttributeName: email
+    #         AttributeType: S
+    #       - AttributeName: thumbs
+    #         KeyType: "HASH"
+    #     KeySchema:
+    #       - AttributeName: email
+    #         KeyType: HASH
+    #     ProvisionedThroughput:
+    #       ReadCapacityUnits: 1
+    #       WriteCapacityUnits: 1
 #  Outputs:
 #     NewOutput:
 #       Description: "Description for the output"

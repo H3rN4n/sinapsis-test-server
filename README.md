@@ -18,9 +18,11 @@ This is an simple api to upload files to an s3 bucket and generate thumbs of it.
 
 3.  Set your sls credencials:
 
-```sh
-serverless config credentials --provider aws --key AKIAIOSFODNN7EXAMPLE --secret wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-```
+Go to ~/.aws/credentials and set a new profile
+
+[devSinapsisProfile]
+aws_access_key_id=***************
+aws_secret_access_key=***************
 
 4.  Launch development server
 
