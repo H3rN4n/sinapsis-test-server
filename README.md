@@ -11,10 +11,12 @@ This is an simple api to upload files to an s3 bucket and generate thumbs of it.
 ```
 
 2.  Create an environment config file.
-    One level folder outside create a new config folder and inside create form example config.dev.json.
+    Inside serverless.yml configure your custom env variables.
 
-    Then Put the required keys:
-    BUCKET: 'your bucket name'
+    ej:
+
+    ITEMS_DYNAMODB_TABLE: sls-sinapsis-thumbs-dev
+    BUCKET: s3-fileupload-sinapsis
 
 3.  Set your sls credencials:
 
